@@ -7,6 +7,8 @@ import {
   Wait,
   WaitTime,
   StateMachine,
+  Succeed,
+  Fail,
 } from 'aws-cdk-lib/aws-stepfunctions';
 import { TransactionsRawStorageFunction } from './transactions-raw-storage.function';
 import { Duration, Stack } from 'aws-cdk-lib';
@@ -21,7 +23,7 @@ export class TransactionProcessingMachineBuilder {
 
   public build(stack: Stack): StateMachine {
     this.stack = stack;
-    this.createValidatorStep().createParallelStorageStep();
+    this.createValidatorStep().createParallelStorageStep().createSucceedStep();
 
     return new StateMachine(this.stack, 'Transaction processing machine', {
       definition: this.stateMachineDefinition,
@@ -31,9 +33,9 @@ export class TransactionProcessingMachineBuilder {
     });
   }
 
-  private chainStep(step: Chain): void {
+  private chainStep(step: IChainable): void {
     if (!this.stateMachineDefinition) {
-      this.stateMachineDefinition = step;
+      this.stateMachineDefinition = step as Chain;
     } else {
       this.stateMachineDefinition = this.stateMachineDefinition.next(step);
     }
@@ -46,6 +48,7 @@ export class TransactionProcessingMachineBuilder {
       outputPath: '$.Payload',
     });
 
+    lambdaJob.addCatch(this.createFailureStep());
     this.chainStep(lambdaJob);
 
     return this;
@@ -67,6 +70,8 @@ export class TransactionProcessingMachineBuilder {
 
     parallel.branch(rawStorageLambda);
     parallel.branch(remodellerJob);
+
+    parallel.addCatch(this.createFailureStep());
 
     this.chainStep(parallel);
 
@@ -90,5 +95,17 @@ export class TransactionProcessingMachineBuilder {
     mapState.iterator(lambdaJob);
 
     return mapState;
+  }
+
+  protected createSucceedStep(): TransactionProcessingMachineBuilder {
+    const succeed = new Succeed(this.stack, 'Succeed');
+
+    this.chainStep(succeed);
+
+    return this;
+  }
+
+  protected createFailureStep(): Fail {
+    return new Fail(this.stack, 'Failure');
   }
 }

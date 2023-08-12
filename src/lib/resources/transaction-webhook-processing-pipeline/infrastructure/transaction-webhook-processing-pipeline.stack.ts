@@ -1,6 +1,6 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Stack, StackProps, Tags } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import {TransactionProcessingMachineBuilder} from "./transaction-processing.machine";
+import { TransactionsWebhookApi } from './transactions-webhook.api';
 
 export class TransactionWebhookProcessingPipelineStack extends Stack {
   static readonly STACK_NAME = 'TransactionWebhookProcessingPipelineStack';
@@ -9,9 +9,10 @@ export class TransactionWebhookProcessingPipelineStack extends Stack {
     super(scope, TransactionWebhookProcessingPipelineStack.STACK_NAME, props);
 
     /**
-     * Build the state machine that processes the transactions.
+     * Creates the API with the state machine that processes the transactions.
      */
-    const stateMachineBuilder = new TransactionProcessingMachineBuilder();
-    stateMachineBuilder.build(this);
+    TransactionsWebhookApi.create(this);
+
+    Tags.of(this).add('project', 'transaction-webhook-processing-pipeline');
   }
 }
