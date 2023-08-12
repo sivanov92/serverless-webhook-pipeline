@@ -12,7 +12,7 @@ export class TransactionsRawStorageFunction {
             runtime: TransactionsRawStorageFunction.NODE_RUNTIME,
             handler: TransactionsRawStorageFunction.HANDLER,
             code: Code.fromAsset(
-                `../../src/${TransactionsRawStorageFunction.FUNCTION_CODE_FILE}`
+                `../src/${TransactionsRawStorageFunction.FUNCTION_CODE_FILE}`
             ),
         });
     }

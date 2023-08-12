@@ -12,7 +12,7 @@ export class TransactionValidatorFunction {
       runtime: TransactionValidatorFunction.NODE_RUNTIME,
       handler: TransactionValidatorFunction.HANDLER,
       code: Code.fromAsset(
-        `../../src/${TransactionValidatorFunction.FUNCTION_CODE_FILE}`
+        `../src/${TransactionValidatorFunction.FUNCTION_CODE_FILE}`
       ),
     });
   }

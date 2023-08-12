@@ -1,15 +1,94 @@
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import {
+  Chain,
+  IChainable,
+  Parallel,
+  Map as MapState,
   Wait,
-  Fail,
-  Succeed,
+  WaitTime,
   StateMachine,
 } from 'aws-cdk-lib/aws-stepfunctions';
+import { TransactionsRawStorageFunction } from './transactions-raw-storage.function';
+import { Duration, Stack } from 'aws-cdk-lib';
+import { TransactionValidatorFunction } from './transaction-validator.function';
+import { TransactionsRemodellerFunction } from './transactions-remodeller.function';
 
-export class TransactionProcessingMachine {
-  public build(): any {
-    //TODO Put state machine definition here and return it
+export class TransactionProcessingMachineBuilder {
+  private stateMachineDefinition: Chain;
+  private stack: Stack;
+
+  private readonly REMODELLER_MAX_CONCURRENT_EXECUTIONS = 10;
+
+  public build(stack: Stack): StateMachine {
+    this.stack = stack;
+    this.createValidatorStep().createParallelStorageStep();
+
+    return new StateMachine(this.stack, 'Transaction processing machine', {
+      definition: this.stateMachineDefinition,
+      timeout: Duration.minutes(5),
+      stateMachineName: 'Transaction processing machine',
+      comment: 'This state machine processes transactions from the webhook.',
+    });
   }
 
-  public createValidatorStep(): any {}
+  private chainStep(step: Chain): void {
+    if (!this.stateMachineDefinition) {
+      this.stateMachineDefinition = step;
+    } else {
+      this.stateMachineDefinition = this.stateMachineDefinition.next(step);
+    }
+  }
+
+  protected createValidatorStep(): TransactionProcessingMachineBuilder {
+    const validatorLambda = TransactionValidatorFunction.create(this.stack);
+    const lambdaJob = new LambdaInvoke(this.stack, 'Validate transactions', {
+      lambdaFunction: validatorLambda,
+      outputPath: '$.Payload',
+    });
+
+    this.chainStep(lambdaJob);
+
+    return this;
+  }
+
+  protected createRawStorageStep(): LambdaInvoke {
+    const rawStorageLambda = TransactionsRawStorageFunction.create(this.stack);
+    return new LambdaInvoke(this.stack, 'Store raw transactions', {
+      lambdaFunction: rawStorageLambda,
+      outputPath: '$.Payload',
+    });
+  }
+
+  protected createParallelStorageStep(): TransactionProcessingMachineBuilder {
+    const parallel = new Parallel(this.stack, 'Parallel storage');
+
+    const rawStorageLambda = this.createRawStorageStep();
+    const remodellerJob = this.createRemodellingStep();
+
+    parallel.branch(rawStorageLambda);
+    parallel.branch(remodellerJob);
+
+    this.chainStep(parallel);
+
+    return this;
+  }
+
+  protected createRemodellingStep(): MapState {
+    const remodellerLambda = TransactionsRemodellerFunction.create(this.stack);
+    const lambdaJob = new LambdaInvoke(this.stack, 'Remodel transactions', {
+      lambdaFunction: remodellerLambda,
+      outputPath: '$.Payload',
+    });
+
+    const mapState = new MapState(this.stack, 'Remodelling mapper', {
+      maxConcurrency: this.REMODELLER_MAX_CONCURRENT_EXECUTIONS,
+      itemsPath: '$.Payload',
+      resultPath: '$.Payload',
+      parameters: {},
+    });
+
+    mapState.iterator(lambdaJob);
+
+    return mapState;
+  }
 }

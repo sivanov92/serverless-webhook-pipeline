@@ -12,7 +12,7 @@ export class TransactionsRemodellerFunction {
       runtime: TransactionsRemodellerFunction.NODE_RUNTIME,
       handler: TransactionsRemodellerFunction.HANDLER,
       code: Code.fromAsset(
-        `../../src/${TransactionsRemodellerFunction.FUNCTION_CODE_FILE}`
+        `../src/${TransactionsRemodellerFunction.FUNCTION_CODE_FILE}`
       ),
     });
   }
