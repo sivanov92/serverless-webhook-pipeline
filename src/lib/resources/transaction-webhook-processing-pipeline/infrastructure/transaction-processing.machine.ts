@@ -14,6 +14,7 @@ import { TransactionsRawStorageFunction } from './transactions-raw-storage.funct
 import { Duration, Stack } from 'aws-cdk-lib';
 import { TransactionValidatorFunction } from './transaction-validator.function';
 import { TransactionsRemodellerFunction } from './transactions-remodeller.function';
+import {Role, ServicePrincipal} from 'aws-cdk-lib/aws-iam';
 
 export class TransactionProcessingMachineBuilder {
   private stateMachineDefinition: Chain;
@@ -25,12 +26,16 @@ export class TransactionProcessingMachineBuilder {
     this.stack = stack;
     this.createValidatorStep().createParallelStorageStep().createSucceedStep();
 
-    return new StateMachine(this.stack, 'Transaction processing machine', {
+    const stateMachine = new StateMachine(this.stack, 'Transaction processing machine', {
       definition: this.stateMachineDefinition,
       timeout: Duration.minutes(5),
       stateMachineName: 'Transaction processing machine',
       comment: 'This state machine processes transactions from the webhook.',
     });
+
+    stateMachine.grantStartExecution(this.createExecutionRole());
+
+    return stateMachine;
   }
 
   private chainStep(step: IChainable): void {
@@ -107,5 +112,11 @@ export class TransactionProcessingMachineBuilder {
 
   protected createFailureStep(): Fail {
     return new Fail(this.stack, 'Failure');
+  }
+
+  protected createExecutionRole(): Role {
+    return new Role(this.stack, 'Transaction processing machine execution role', {
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com')
+    });
   }
 }
