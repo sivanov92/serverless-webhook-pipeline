@@ -1,37 +1,41 @@
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import {
   Chain,
+  Fail,
   IChainable,
-  Parallel,
   Map as MapState,
-  Wait,
-  WaitTime,
+  Parallel,
   StateMachine,
   Succeed,
-  Fail,
 } from 'aws-cdk-lib/aws-stepfunctions';
-import { TransactionsRawStorageFunction } from './transactions-raw-storage.function';
+import {
+  TransactionsRawStorageFunction,
+  TransactionValidatorFunction,
+  TransactionsRemodellerFunction,
+} from './functions';
 import { Duration, Stack } from 'aws-cdk-lib';
-import { TransactionValidatorFunction } from './transaction-validator.function';
-import { TransactionsRemodellerFunction } from './transactions-remodeller.function';
-import {Role, ServicePrincipal} from 'aws-cdk-lib/aws-iam';
+import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 export class TransactionProcessingMachineBuilder {
   private stateMachineDefinition: Chain;
   private stack: Stack;
 
-  private readonly REMODELLER_MAX_CONCURRENT_EXECUTIONS = 10;
+  private readonly REMODELLER_MAX_CONCURRENT_EXECUTIONS = 5;
 
   public build(stack: Stack): StateMachine {
     this.stack = stack;
     this.createValidatorStep().createParallelStorageStep().createSucceedStep();
 
-    const stateMachine = new StateMachine(this.stack, 'Transaction processing machine', {
-      definition: this.stateMachineDefinition,
-      timeout: Duration.minutes(5),
-      stateMachineName: 'Transaction processing machine',
-      comment: 'This state machine processes transactions from the webhook.',
-    });
+    const stateMachine = new StateMachine(
+      this.stack,
+      'Transaction processing machine',
+      {
+        definition: this.stateMachineDefinition,
+        timeout: Duration.minutes(5),
+        stateMachineName: 'Transaction processing machine',
+        comment: 'This state machine processes transactions from the webhook.',
+      }
+    );
 
     stateMachine.grantStartExecution(this.createExecutionRole());
 
@@ -50,7 +54,6 @@ export class TransactionProcessingMachineBuilder {
     const validatorLambda = TransactionValidatorFunction.create(this.stack);
     const lambdaJob = new LambdaInvoke(this.stack, 'Validate transactions', {
       lambdaFunction: validatorLambda,
-      outputPath: '$.Payload',
     });
 
     lambdaJob.addCatch(this.createFailureStep());
@@ -63,7 +66,6 @@ export class TransactionProcessingMachineBuilder {
     const rawStorageLambda = TransactionsRawStorageFunction.create(this.stack);
     return new LambdaInvoke(this.stack, 'Store raw transactions', {
       lambdaFunction: rawStorageLambda,
-      outputPath: '$.Payload',
     });
   }
 
@@ -87,13 +89,11 @@ export class TransactionProcessingMachineBuilder {
     const remodellerLambda = TransactionsRemodellerFunction.create(this.stack);
     const lambdaJob = new LambdaInvoke(this.stack, 'Remodel transactions', {
       lambdaFunction: remodellerLambda,
-      outputPath: '$.Payload',
     });
 
     const mapState = new MapState(this.stack, 'Remodelling mapper', {
       maxConcurrency: this.REMODELLER_MAX_CONCURRENT_EXECUTIONS,
-      itemsPath: '$.Payload',
-      resultPath: '$.Payload',
+      resultPath: '$.payload',
       parameters: {},
     });
 
@@ -115,8 +115,12 @@ export class TransactionProcessingMachineBuilder {
   }
 
   protected createExecutionRole(): Role {
-    return new Role(this.stack, 'Transaction processing machine execution role', {
-      assumedBy: new ServicePrincipal('lambda.amazonaws.com')
-    });
+    return new Role(
+      this.stack,
+      'Transaction processing machine execution role',
+      {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      }
+    );
   }
 }

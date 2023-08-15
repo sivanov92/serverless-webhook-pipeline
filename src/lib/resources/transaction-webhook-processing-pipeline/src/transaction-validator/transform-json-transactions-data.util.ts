@@ -1,13 +1,8 @@
 import { BankTransactionsPayload } from '../bank-transactions.types';
 
 export const transformJsonToBankTransactions = (
-  jsonPayload: string
+  parsedTransactions: any,
 ): BankTransactionsPayload => {
-  const parsedTransactions = JSON.parse(jsonPayload);
-  if (!parsedTransactions) {
-    throw new Error(`Transactions are invalid: ${jsonPayload}`);
-  }
-
   return {
     bankAccountId: parsedTransactions.bank_account_id,
     iban: parsedTransactions.iban,
