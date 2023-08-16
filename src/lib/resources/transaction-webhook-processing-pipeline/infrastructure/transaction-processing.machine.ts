@@ -15,6 +15,7 @@ import {
 } from './functions';
 import { Duration, Stack } from 'aws-cdk-lib';
 import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { TransactionApiProps } from './index';
 
 export class TransactionProcessingMachineBuilder {
   private stateMachineDefinition: Chain;
@@ -22,7 +23,7 @@ export class TransactionProcessingMachineBuilder {
 
   private readonly REMODELLER_MAX_CONCURRENT_EXECUTIONS = 5;
 
-  public build(stack: Stack): StateMachine {
+  public build(stack: Stack, params: TransactionApiProps): StateMachine {
     this.stack = stack;
     this.createValidatorStep().createParallelStorageStep().createSucceedStep();
 
