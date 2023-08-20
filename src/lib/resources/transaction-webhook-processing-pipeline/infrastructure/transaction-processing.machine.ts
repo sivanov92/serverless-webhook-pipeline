@@ -1,38 +1,44 @@
-import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
+import {LambdaInvoke} from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import {
   Chain,
   Fail,
   IChainable,
-  Map as MapState,
   Parallel,
   StateMachine,
+  StateMachineType,
   Succeed,
 } from 'aws-cdk-lib/aws-stepfunctions';
 import {
   TransactionsRawStorageFunction,
-  TransactionValidatorFunction,
   TransactionsRemodellerFunction,
+  TransactionValidatorFunction,
 } from './functions';
-import { Duration, Stack } from 'aws-cdk-lib';
-import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { TransactionApiProps } from './index';
+import {Duration, Stack} from 'aws-cdk-lib';
+import {Role, ServicePrincipal} from 'aws-cdk-lib/aws-iam';
+import {TransactionApiProps} from './index';
 
 export class TransactionProcessingMachineBuilder {
   private stateMachineDefinition: Chain;
   private stack: Stack;
 
-
   public build(stack: Stack, params: TransactionApiProps): StateMachine {
     this.stack = stack;
-    this.createValidatorStep().createParallelStorageStep().createSucceedStep();
+    const failure = this.createFailureStep();
+
+    this.createValidatorStep({
+        failure,
+    }).createParallelStorageStep({
+        failure,
+    }).createSucceedStep();
 
     const stateMachine = new StateMachine(
       this.stack,
-      'Transaction processing machine',
+      'TransactionProcessingMachine',
       {
         definition: this.stateMachineDefinition,
         timeout: Duration.minutes(5),
-        stateMachineName: 'Transaction processing machine',
+        stateMachineName: 'transaction-processing-machine',
+        stateMachineType: StateMachineType.EXPRESS,
         comment: 'This state machine processes transactions from the webhook.',
       }
     );
@@ -50,13 +56,16 @@ export class TransactionProcessingMachineBuilder {
     }
   }
 
-  protected createValidatorStep(): TransactionProcessingMachineBuilder {
+  protected createValidatorStep(params: {
+    failure?: Fail;
+  }): TransactionProcessingMachineBuilder {
     const validatorLambda = TransactionValidatorFunction.create(this.stack);
     const lambdaJob = new LambdaInvoke(this.stack, 'Validate transactions', {
       lambdaFunction: validatorLambda,
     });
 
-    lambdaJob.addCatch(this.createFailureStep());
+    const failure = params.failure || this.createFailureStep();
+    lambdaJob.addCatch(failure);
     this.chainStep(lambdaJob);
 
     return this;
@@ -69,7 +78,9 @@ export class TransactionProcessingMachineBuilder {
     });
   }
 
-  protected createParallelStorageStep(): TransactionProcessingMachineBuilder {
+  protected createParallelStorageStep(params: {
+    failure?: Fail;
+  }): TransactionProcessingMachineBuilder {
     const parallel = new Parallel(this.stack, 'Parallel storage');
 
     const rawStorageLambda = this.createRawStorageStep();
@@ -78,7 +89,8 @@ export class TransactionProcessingMachineBuilder {
     parallel.branch(rawStorageLambda);
     parallel.branch(remodellerJob);
 
-    parallel.addCatch(this.createFailureStep());
+    const failure = params.failure || this.createFailureStep();
+    parallel.addCatch(failure);
 
     this.chainStep(parallel);
 
