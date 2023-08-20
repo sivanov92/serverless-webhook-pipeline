@@ -1,4 +1,4 @@
-import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { BatchWriteItemCommandInput, DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamodbConfigParams } from './dynamodb.types';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { DynamodbException } from './dynamodb.exception';
@@ -13,15 +13,22 @@ export class DynamodbService {
     });
   }
 
-  public async createItem(item: any, tableName: string) {
-    const params = {
-      TableName: tableName,
-      Item: marshall(item),
+  public async batchCreateItems(items: any[], tableName: string) {
+    const params: BatchWriteItemCommandInput = {
+      RequestItems: {
+        [tableName]: items.map((item) => {
+          return {
+            PutRequest: {
+              Item: marshall(item),
+            },
+          };
+        }),
+      },
     };
 
-    const result = await this.client.putItem(params);
+    const result = await this.client.batchWriteItem(params);
     if (!result) {
-      throw DynamodbException.couldNotCreateItem(item.PK, tableName);
+      throw DynamodbException.couldNotWriteBatch(tableName);
     }
   }
 }

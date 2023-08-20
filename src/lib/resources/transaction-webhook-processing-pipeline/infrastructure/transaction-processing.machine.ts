@@ -21,7 +21,6 @@ export class TransactionProcessingMachineBuilder {
   private stateMachineDefinition: Chain;
   private stack: Stack;
 
-  private readonly REMODELLER_MAX_CONCURRENT_EXECUTIONS = 5;
 
   public build(stack: Stack, params: TransactionApiProps): StateMachine {
     this.stack = stack;
@@ -86,21 +85,11 @@ export class TransactionProcessingMachineBuilder {
     return this;
   }
 
-  protected createRemodellingStep(): MapState {
+  protected createRemodellingStep(): LambdaInvoke {
     const remodellerLambda = TransactionsRemodellerFunction.create(this.stack);
-    const lambdaJob = new LambdaInvoke(this.stack, 'Remodel transactions', {
+    return new LambdaInvoke(this.stack, 'Remodel transactions', {
       lambdaFunction: remodellerLambda,
     });
-
-    const mapState = new MapState(this.stack, 'Remodelling mapper', {
-      maxConcurrency: this.REMODELLER_MAX_CONCURRENT_EXECUTIONS,
-      resultPath: '$.payload',
-      parameters: {},
-    });
-
-    mapState.iterator(lambdaJob);
-
-    return mapState;
   }
 
   protected createSucceedStep(): TransactionProcessingMachineBuilder {
