@@ -1,8 +1,9 @@
-import {LambdaInvoke} from 'aws-cdk-lib/aws-stepfunctions-tasks';
+import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import {
   Chain,
   Fail,
   IChainable,
+  LogLevel,
   Parallel,
   StateMachine,
   StateMachineType,
@@ -13,9 +14,10 @@ import {
   TransactionsRemodellerFunction,
   TransactionValidatorFunction,
 } from './functions';
-import {Duration, Stack} from 'aws-cdk-lib';
-import {Role, ServicePrincipal} from 'aws-cdk-lib/aws-iam';
-import {TransactionApiProps} from './index';
+import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { TransactionApiProps } from './index';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 export class TransactionProcessingMachineBuilder {
   private stateMachineDefinition: Chain;
@@ -25,11 +27,22 @@ export class TransactionProcessingMachineBuilder {
     this.stack = stack;
     const failure = this.createFailureStep();
 
+    const stateMachineLogGroup = new LogGroup(
+      this.stack,
+      'TransactionProcessingMachineLogGroup',
+      {
+        logGroupName: '/aws/states/transaction-processing-machine',
+        retention: RetentionDays.ONE_WEEK,
+        removalPolicy: RemovalPolicy.DESTROY,
+      }
+    );
     this.createValidatorStep({
+      failure,
+    })
+      .createParallelStorageStep({
         failure,
-    }).createParallelStorageStep({
-        failure,
-    }).createSucceedStep();
+      })
+      .createSucceedStep();
 
     const stateMachine = new StateMachine(
       this.stack,
@@ -40,6 +53,10 @@ export class TransactionProcessingMachineBuilder {
         stateMachineName: 'transaction-processing-machine',
         stateMachineType: StateMachineType.EXPRESS,
         comment: 'This state machine processes transactions from the webhook.',
+        logs: {
+          destination: stateMachineLogGroup,
+          level: LogLevel.ALL,
+        },
       }
     );
 
@@ -59,7 +76,7 @@ export class TransactionProcessingMachineBuilder {
   protected createValidatorStep(params: {
     failure?: Fail;
   }): TransactionProcessingMachineBuilder {
-    const validatorLambda = TransactionValidatorFunction.create(this.stack);
+    const validatorLambda = (new TransactionValidatorFunction).create(this.stack);
     const lambdaJob = new LambdaInvoke(this.stack, 'Validate transactions', {
       lambdaFunction: validatorLambda,
     });
@@ -72,7 +89,7 @@ export class TransactionProcessingMachineBuilder {
   }
 
   protected createRawStorageStep(): LambdaInvoke {
-    const rawStorageLambda = TransactionsRawStorageFunction.create(this.stack);
+    const rawStorageLambda = (new TransactionsRawStorageFunction).create(this.stack);
     return new LambdaInvoke(this.stack, 'Store raw transactions', {
       lambdaFunction: rawStorageLambda,
     });
@@ -98,7 +115,7 @@ export class TransactionProcessingMachineBuilder {
   }
 
   protected createRemodellingStep(): LambdaInvoke {
-    const remodellerLambda = TransactionsRemodellerFunction.create(this.stack);
+    const remodellerLambda = (new TransactionsRemodellerFunction).create(this.stack);
     return new LambdaInvoke(this.stack, 'Remodel transactions', {
       lambdaFunction: remodellerLambda,
     });

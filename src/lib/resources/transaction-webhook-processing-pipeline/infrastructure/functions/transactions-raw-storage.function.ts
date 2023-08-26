@@ -1,18 +1,15 @@
-import { AssetCode, Code, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { AssetCode, Code } from 'aws-cdk-lib/aws-lambda';
 import { BaseWrapperFunction } from '../../../../common';
 import * as path from 'path';
 
 export class TransactionsRawStorageFunction extends BaseWrapperFunction {
-  protected static readonly FUNCTION_NAME = 'TransactionsRawStorageFunction';
-  protected static readonly NODE_RUNTIME = Runtime.NODEJS_18_X;
-  protected static readonly FUNCTION_CODE_FILE =
-    'transaction-raw-storage.lambda';
-  protected static readonly HANDLER = `${this.FUNCTION_CODE_FILE}.handler`;
-  protected static readonly DIRECTORY_NAME = 'transaction-raw-storage';
+  protected readonly lambdaName = 'TransactionsRawStorageFunction';
+  protected readonly functionSourceCodeFile = 'transaction-raw-storage.lambda';
+  protected readonly directoryName = 'transaction-raw-storage';
 
-  protected static getFunctionPath(): AssetCode {
+  protected getFunctionPath(): AssetCode {
     return Code.fromAsset(
-      path.join(__dirname, '../../src', this.DIRECTORY_NAME)
+      path.join(__dirname, '../../src', this.directoryName)
     );
   }
 }
