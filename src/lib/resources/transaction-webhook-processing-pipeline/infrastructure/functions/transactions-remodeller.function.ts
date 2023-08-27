@@ -4,7 +4,7 @@ import * as path from 'path';
 
 export class TransactionsRemodellerFunction extends BaseWrapperFunction {
   protected readonly lambdaName = 'TransactionsRemodellerFunction';
-  protected readonly functionSourceCodeFile = 'transaction-remodeller.lambda';
+  protected readonly functionSourceCodeFile = 'transaction-remodeller-lambda';
   protected readonly directoryName = 'transaction-remodeller';
 
   protected getFunctionPath(): AssetCode {
