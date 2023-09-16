@@ -1,8 +1,12 @@
 import { Stack } from 'aws-cdk-lib';
-import {AssetCode, Function, LayerVersion, Runtime} from 'aws-cdk-lib/aws-lambda';
 import {
-  NodeModulesLayer,
-} from "../../resources/transaction-webhook-processing-pipeline/infrastructure/layers/node-modules.layer";
+  AssetCode,
+  Function,
+  LayerVersion,
+  Runtime,
+} from 'aws-cdk-lib/aws-lambda';
+import { NodeModulesLayer } from '../../resources/transaction-webhook-processing-pipeline/infrastructure/layers/node-modules.layer';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 
 export abstract class BaseWrapperFunction {
   protected nodeRuntime = Runtime.NODEJS_18_X;
@@ -10,17 +14,13 @@ export abstract class BaseWrapperFunction {
   protected abstract lambdaName: string;
   protected abstract functionSourceCodeFile: string;
 
-  protected abstract getFunctionPath(): AssetCode;
-  protected getLayers(stack: Stack): LayerVersion[] {
-    return NodeModulesLayer.getLayer(stack);
-  }
+  protected abstract getFunctionPath(): string;
 
-  public create(stack: Stack): Function {
-    return new Function(stack, this.lambdaName, {
+  public create(stack: Stack): NodejsFunction {
+    return new NodejsFunction(stack, this.lambdaName, {
       runtime: this.nodeRuntime,
-      handler: `${this.functionSourceCodeFile}.handler`,
-      code: this.getFunctionPath(),
-      layers: this.getLayers(stack),
+      handler: `handler`,
+      entry: this.getFunctionPath(),
     });
   }
 }

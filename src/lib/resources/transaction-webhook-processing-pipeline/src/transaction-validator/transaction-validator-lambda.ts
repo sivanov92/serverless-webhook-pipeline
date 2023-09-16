@@ -11,8 +11,7 @@ export const handler: Handler = (
     throw new Error('Missing body');
   }
 
-  const parsedBody = JSON.parse(event.body);
-  validateBankTransactions(parsedBody);
+  validateBankTransactions(event.body);
 
-  return transformJsonToBankTransactions(parsedBody);
+  return transformJsonToBankTransactions(event.body);
 };

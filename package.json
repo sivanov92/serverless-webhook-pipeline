@@ -5,9 +5,8 @@
     "serverless-webhook-pipeline": "src/bin/serverless-webhook-pipeline.js"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "test": "jest",
+    "build": "",
+    "watch": "",
     "cdk": "cdk"
   },
   "devDependencies": {
