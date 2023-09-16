@@ -1,6 +1,6 @@
-import Ajv, { Schema } from 'ajv';
+import { Schema } from 'ajv';
 
-const bankTransactionsSchema: Schema = {
+export const bankTransactionsSchema: Schema = {
   type: 'object',
   properties: {
     bank_account_id: {
@@ -38,15 +38,4 @@ const bankTransactionsSchema: Schema = {
   },
   required: ['bank_account_id', 'iban', 'bank_name', 'currency', 'items'],
   additionalProperties: false,
-};
-
-export const validateBankTransactions = (bankTransactions: any): void => {
-  const ajv = new Ajv();
-  const validate = ajv.compile(bankTransactionsSchema);
-  const transactionsAreValid = validate(bankTransactions);
-  if (!transactionsAreValid) {
-    throw new Error(
-      `Bank transactions are invalid: ${JSON.stringify(validate.errors)}`
-    );
-  }
 };

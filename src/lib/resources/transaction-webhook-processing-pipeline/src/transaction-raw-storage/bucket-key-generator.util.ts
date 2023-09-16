@@ -1,4 +1,4 @@
-import { BankTransactionsPayload } from '../bank-transactions.types';
+import { BankTransactionsPayload } from '../../../../packages/bank-transactions/bank-transactions.types';
 
 export const bucketKeyGeneratorUtil = (
   transactionsPayload: BankTransactionsPayload

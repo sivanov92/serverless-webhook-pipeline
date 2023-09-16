@@ -22,8 +22,17 @@
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "paths": {
+      "@serverless-pipeline/bank-transactions": [
+        "./src/lib/packages/bank-transactions/index.ts"
+      ]
+    },
+    "allowSyntheticDefaultImports": true
   },
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
     "node_modules",
     "cdk.out"

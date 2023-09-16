@@ -1,11 +1,5 @@
 import { Stack } from 'aws-cdk-lib';
-import {
-  AssetCode,
-  Function,
-  LayerVersion,
-  Runtime,
-} from 'aws-cdk-lib/aws-lambda';
-import { NodeModulesLayer } from '../../resources/transaction-webhook-processing-pipeline/infrastructure/layers/node-modules.layer';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 
 export abstract class BaseWrapperFunction {

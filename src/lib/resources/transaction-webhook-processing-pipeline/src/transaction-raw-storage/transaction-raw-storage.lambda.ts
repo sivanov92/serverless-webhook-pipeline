@@ -1,4 +1,4 @@
-import { BankTransactionsPayload } from '../bank-transactions.types';
+import { BankTransactionsPayload } from '@serverless-pipeline/bank-transactions';
 import { bucketKeyGeneratorUtil } from './bucket-key-generator.util';
 import { S3Service } from '../../../../integrations/s3';
 import { RawTransactionsBucket } from '../../infrastructure/storage';

@@ -1,6 +1,6 @@
 import { Stack } from 'aws-cdk-lib';
 import { RestApi, StepFunctionsRestApi } from 'aws-cdk-lib/aws-apigateway';
-import { TransactionProcessingMachineBuilder } from './transaction-processing.machine';
+import { TransactionProcessingMachineBuilder } from './transaction-processing.steps';
 import { TransactionApiProps } from './index';
 
 export class TransactionsWebhookApi {
