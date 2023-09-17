@@ -8,16 +8,12 @@ import { RemovalPolicy, Stack } from 'aws-cdk-lib';
 
 export class FormattedTransactionsTable {
   public static readonly tableName: string = 'formatted-transactions-table';
+
   public static readonly partitionKey: string = 'PK';
   public static readonly sortKey: string = 'SK';
-  private table: Table;
 
-  public getTable(): Table {
-    return this.table;
-  }
-
-  public createTable(stack: Stack): FormattedTransactionsTable {
-    const table = new Table(stack, FormattedTransactionsTable.tableName, {
+  public createTable(stack: Stack): Table {
+    return new Table(stack, FormattedTransactionsTable.tableName, {
       tableName: FormattedTransactionsTable.tableName,
       partitionKey: {
         name: FormattedTransactionsTable.partitionKey,
@@ -32,9 +28,5 @@ export class FormattedTransactionsTable {
       encryption: TableEncryption.AWS_MANAGED,
       pointInTimeRecovery: true,
     });
-
-    this.table = table;
-
-    return this;
   }
 }

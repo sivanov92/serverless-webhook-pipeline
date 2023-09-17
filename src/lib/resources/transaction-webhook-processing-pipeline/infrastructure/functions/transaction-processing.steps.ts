@@ -13,17 +13,17 @@ import {
   TransactionsRawStorageFunction,
   TransactionsRemodellerFunction,
   TransactionValidatorFunction,
-} from './functions';
+} from './index';
 import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { TransactionApiProps } from './index';
+import { TransactionApiProps } from '../index';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 export class TransactionProcessingMachineBuilder {
   private stateMachineDefinition: Chain;
   private stack: Stack;
 
-  public build(stack: Stack, params: TransactionApiProps): StateMachine {
+  public build(stack: Stack): StateMachine {
     this.stack = stack;
     const failure = this.createFailureStep();
 
@@ -76,7 +76,9 @@ export class TransactionProcessingMachineBuilder {
   protected createValidatorStep(params: {
     failure?: Fail;
   }): TransactionProcessingMachineBuilder {
-    const validatorLambda = (new TransactionValidatorFunction).create(this.stack);
+    const validatorLambda = new TransactionValidatorFunction().create(
+      this.stack
+    );
     const lambdaJob = new LambdaInvoke(this.stack, 'Validate transactions', {
       lambdaFunction: validatorLambda,
     });
@@ -89,7 +91,9 @@ export class TransactionProcessingMachineBuilder {
   }
 
   protected createRawStorageStep(): LambdaInvoke {
-    const rawStorageLambda = (new TransactionsRawStorageFunction).create(this.stack);
+    const rawStorageLambda = new TransactionsRawStorageFunction().create(
+      this.stack
+    );
     return new LambdaInvoke(this.stack, 'Store raw transactions', {
       lambdaFunction: rawStorageLambda,
     });
@@ -115,7 +119,9 @@ export class TransactionProcessingMachineBuilder {
   }
 
   protected createRemodellingStep(): LambdaInvoke {
-    const remodellerLambda = (new TransactionsRemodellerFunction).create(this.stack);
+    const remodellerLambda = new TransactionsRemodellerFunction().create(
+      this.stack
+    );
     return new LambdaInvoke(this.stack, 'Remodel transactions', {
       lambdaFunction: remodellerLambda,
     });

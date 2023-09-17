@@ -10,18 +10,15 @@ export class TransactionWebhookProcessingPipelineStack extends Stack {
     super(scope, TransactionWebhookProcessingPipelineStack.STACK_NAME, props);
 
     const storageBucketManager = new RawTransactionsBucket();
-    const bucket = storageBucketManager.createBucket(this).getBucket();
+    storageBucketManager.createBucket(this);
 
     const dynamoTableManager = new FormattedTransactionsTable();
-    const table = dynamoTableManager.createTable(this).getTable();
+    dynamoTableManager.createTable(this);
 
     /**
      * Creates the API with the state machine that processes the transactions.
      */
-    TransactionsWebhookApi.create(this, {
-      rawTransactionsBucket: bucket,
-      formattedTransactionsTable: table,
-    });
+    TransactionsWebhookApi.create(this);
 
     Tags.of(this).add('project', 'transaction-webhook-processing-pipeline');
   }

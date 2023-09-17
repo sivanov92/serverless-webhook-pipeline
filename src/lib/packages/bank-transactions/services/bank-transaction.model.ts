@@ -1,13 +1,15 @@
-import { BankTransactionsPayload } from '../bank-transactions.types';
+import {
+  BankTransactionsPayload,
+  TransformedTransaction,
+} from '../bank-transactions.types';
 import { DynamodbService } from '../../../integrations/dynamodb';
-import { TransformedTransaction } from '../bank-transactions.types';
+import { FormattedTransactionsTable } from '@serverless-pipeline/webhook-pipeline';
 
 export class BankTransaction {
   private static readonly PARTITION_KEY = 'PK';
   private static readonly SORT_KEY = 'SK';
   private static readonly PARTITION_KEY_PREFIX = 'IBAN#';
   private static readonly SORT_KEY_PREFIX = 'TRANSACTION#';
-  private static TABLE_NAME = 'formatted-transactions-table';
 
   public static createItems(
     transactionData: BankTransactionsPayload
@@ -44,6 +46,9 @@ export class BankTransaction {
     const items = this.createItems(transactionData);
 
     const dynamoDbService = new DynamodbService();
-    await dynamoDbService.batchCreateItems(items, this.TABLE_NAME);
+    await dynamoDbService.batchCreateItems(
+      items,
+      FormattedTransactionsTable.tableName
+    );
   }
 }

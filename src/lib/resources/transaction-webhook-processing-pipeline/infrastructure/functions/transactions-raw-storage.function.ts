@@ -4,7 +4,7 @@ import * as path from 'path';
 export class TransactionsRawStorageFunction extends BaseWrapperFunction {
   protected readonly lambdaName = 'TransactionsRawStorageFunction';
   protected readonly functionSourceCodeFile =
-    'transaction-raw-storage-lambda.ts';
+    'transaction-raw-storage.lambda.ts';
   protected readonly directoryName = 'transaction-raw-storage';
 
   protected getFunctionPath(): string {
