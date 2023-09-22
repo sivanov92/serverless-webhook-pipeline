@@ -16,7 +16,6 @@ import {
 } from './index';
 import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { TransactionApiProps } from '../index';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 export class TransactionProcessingMachineBuilder {
@@ -96,6 +95,7 @@ export class TransactionProcessingMachineBuilder {
     );
     return new LambdaInvoke(this.stack, 'Store raw transactions', {
       lambdaFunction: rawStorageLambda,
+      inputPath: '$.Payload',
     });
   }
 
@@ -124,6 +124,7 @@ export class TransactionProcessingMachineBuilder {
     );
     return new LambdaInvoke(this.stack, 'Remodel transactions', {
       lambdaFunction: remodellerLambda,
+      inputPath: '$.Payload',
     });
   }
 

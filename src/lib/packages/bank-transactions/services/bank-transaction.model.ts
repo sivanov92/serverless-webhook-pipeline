@@ -3,7 +3,7 @@ import {
   TransformedTransaction,
 } from '../bank-transactions.types';
 import { DynamodbService } from '../../../integrations/dynamodb';
-import { FormattedTransactionsTable } from '@serverless-pipeline/webhook-pipeline';
+import { TRANSACTIONS_REMODELLED_TABLE_NAME } from '../bank-transactions.config';
 
 export class BankTransaction {
   private static readonly PARTITION_KEY = 'PK';
@@ -48,7 +48,7 @@ export class BankTransaction {
     const dynamoDbService = new DynamodbService();
     await dynamoDbService.batchCreateItems(
       items,
-      FormattedTransactionsTable.tableName
+      TRANSACTIONS_REMODELLED_TABLE_NAME
     );
   }
 }

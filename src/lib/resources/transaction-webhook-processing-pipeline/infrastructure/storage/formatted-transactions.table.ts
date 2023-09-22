@@ -5,16 +5,15 @@ import {
   TableEncryption,
 } from 'aws-cdk-lib/aws-dynamodb';
 import { RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { TRANSACTIONS_REMODELLED_TABLE_NAME } from '../../../../packages/bank-transactions';
 
 export class FormattedTransactionsTable {
-  public static readonly tableName: string = 'formatted-transactions-table';
-
   public static readonly partitionKey: string = 'PK';
   public static readonly sortKey: string = 'SK';
 
-  public createTable(stack: Stack): Table {
-    return new Table(stack, FormattedTransactionsTable.tableName, {
-      tableName: FormattedTransactionsTable.tableName,
+  public static createTable(stack: Stack): Table {
+    return new Table(stack, TRANSACTIONS_REMODELLED_TABLE_NAME, {
+      tableName: TRANSACTIONS_REMODELLED_TABLE_NAME,
       partitionKey: {
         name: FormattedTransactionsTable.partitionKey,
         type: AttributeType.STRING,

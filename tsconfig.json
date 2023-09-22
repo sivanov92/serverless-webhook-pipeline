@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
     "target": "ES2020",
     "module": "commonjs",
     "lib": [
@@ -25,11 +26,8 @@
     ],
     "paths": {
       "@serverless-pipeline/bank-transactions": [
-        "./src/lib/packages/bank-transactions/index.ts"
+        "src/lib/packages/bank-transactions"
       ],
-      "@serverless-pipeline/webhook-pipeline": [
-        "./src/lib/resources/transaction-webhook-processing-pipeline/index.ts"
-      ]
     },
     "allowSyntheticDefaultImports": true
   },

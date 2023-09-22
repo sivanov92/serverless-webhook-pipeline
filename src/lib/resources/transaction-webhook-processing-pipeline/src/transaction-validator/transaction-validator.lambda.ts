@@ -5,14 +5,13 @@ import {
   BankTransactionsValidator,
 } from '@serverless-pipeline/bank-transactions';
 
-export const handler: Handler = (
+export const handler: Handler = async (
   event: APIGatewayEvent
-): BankTransactionsPayload => {
+): Promise<BankTransactionsPayload> => {
   if (!event.body) {
     throw new Error('Missing body');
   }
 
   BankTransactionsValidator.validate(event.body);
-
   return BankTransactionsValidator.parse(event.body);
 };
