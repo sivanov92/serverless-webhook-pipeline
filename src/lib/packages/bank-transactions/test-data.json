@@ -1,34 +1,32 @@
 {
-  "body": {
-    "bank_account_id": "account_XXX",
-    "iban": "IBANXXXXX",
-    "bank_name": "RANDOM",
-    "currency": "EUR",
-    "items": [
-      {
-        "transaction_id": "tr_123",
-        "amount": 127.00,
-        "sender": "Contractor 1",
-        "statement_descriptor": "some transaction 1"
-      },
-      {
-        "transaction_id": "tr_124",
-        "amount": 300.00,
-        "sender": "Contractor 2",
-        "statement_descriptor": "some transaction 2"
-      },
-      {
-        "transaction_id": "tr_125",
-        "amount": 127.00,
-        "sender": "Contractor 3",
-        "statement_descriptor": "some transaction 3"
-      },
-      {
-        "transaction_id": "tr_126",
-        "amount": 1050.00,
-        "sender": "Contractor 4",
-        "statement_descriptor": "some transaction 4"
-      }
-    ]
-  }
+  "bank_account_id": "account_XXX",
+  "iban": "IBANXXXXX",
+  "bank_name": "RANDOM",
+  "currency": "EUR",
+  "items": [
+    {
+      "transaction_id": "tr_123",
+      "amount": 127.00,
+      "sender": "Contractor 1",
+      "statement_descriptor": "some transaction 1"
+    },
+    {
+      "transaction_id": "tr_124",
+      "amount": 300.00,
+      "sender": "Contractor 2",
+      "statement_descriptor": "some transaction 2"
+    },
+    {
+      "transaction_id": "tr_125",
+      "amount": 127.00,
+      "sender": "Contractor 3",
+      "statement_descriptor": "some transaction 3"
+    },
+    {
+      "transaction_id": "tr_126",
+      "amount": 1050.00,
+      "sender": "Contractor 4",
+      "statement_descriptor": "some transaction 4"
+    }
+  ]
 }
