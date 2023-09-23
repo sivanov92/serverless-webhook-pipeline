@@ -4,6 +4,7 @@
   "bin": {
     "serverless-webhook-pipeline": "src/bin/serverless-webhook-pipeline.js"
   },
+  "license": "ISC",
   "scripts": {
     "build": "",
     "watch": "",

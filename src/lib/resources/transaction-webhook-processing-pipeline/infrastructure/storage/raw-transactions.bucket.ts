@@ -38,8 +38,4 @@ export class RawTransactionsBucket {
       },
     ];
   }
-
-  protected buildResourceBasedPolicy(): void {
-    //TODO Role
-  }
 }

@@ -28,6 +28,12 @@
       "@serverless-pipeline/bank-transactions": [
         "src/lib/packages/bank-transactions"
       ],
+      "@serverless-pipeline/s3": [
+        "src/lib/integrations/s3"
+      ],
+      "@serverless-pipeline/dynamo": [
+        "src/lib/integrations/dynamodb"
+      ]
     },
     "allowSyntheticDefaultImports": true
   },

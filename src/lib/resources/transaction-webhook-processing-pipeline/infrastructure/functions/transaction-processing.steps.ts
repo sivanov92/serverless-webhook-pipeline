@@ -22,6 +22,11 @@ export class TransactionProcessingMachineBuilder {
   private stateMachineDefinition: Chain;
   private stack: Stack;
 
+  /**
+   * Factory method to create a new instance of the state machine.
+   *
+   * @param stack
+   */
   public build(stack: Stack): StateMachine {
     this.stack = stack;
     const failure = this.createFailureStep();
@@ -64,6 +69,12 @@ export class TransactionProcessingMachineBuilder {
     return stateMachine;
   }
 
+  /**
+   * Chains a step to the state machine definition.
+   *
+   * @param step
+   * @private
+   */
   private chainStep(step: IChainable): void {
     if (!this.stateMachineDefinition) {
       this.stateMachineDefinition = step as Chain;
@@ -72,6 +83,12 @@ export class TransactionProcessingMachineBuilder {
     }
   }
 
+  /**
+   * Creates a step that validates the transactions.
+   *
+   * @param params
+   * @protected
+   */
   protected createValidatorStep(params: {
     failure?: Fail;
   }): TransactionProcessingMachineBuilder {
@@ -89,6 +106,11 @@ export class TransactionProcessingMachineBuilder {
     return this;
   }
 
+  /**
+   * Creates a step that stores the transactions in S3.
+   *
+   * @protected
+   */
   protected createRawStorageStep(): LambdaInvoke {
     const rawStorageLambda = new TransactionsRawStorageFunction().create(
       this.stack
@@ -99,16 +121,19 @@ export class TransactionProcessingMachineBuilder {
     });
   }
 
+  /**
+   * Creates a step that stores the transactions in parallel.
+   * @param params
+   *
+   * @protected
+   */
   protected createParallelStorageStep(params: {
     failure?: Fail;
   }): TransactionProcessingMachineBuilder {
     const parallel = new Parallel(this.stack, 'Parallel storage');
 
-    const rawStorageLambda = this.createRawStorageStep();
-    const remodellerJob = this.createRemodellingStep();
-
-    parallel.branch(rawStorageLambda);
-    parallel.branch(remodellerJob);
+    parallel.branch(this.createRawStorageStep());
+    parallel.branch(this.createRemodellingStep());
 
     const failure = params.failure || this.createFailureStep();
     parallel.addCatch(failure);
@@ -118,6 +143,11 @@ export class TransactionProcessingMachineBuilder {
     return this;
   }
 
+  /**
+   * Creates a step that remodels the transactions and stores them in DynamoDb.
+   *
+   * @protected
+   */
   protected createRemodellingStep(): LambdaInvoke {
     const remodellerLambda = new TransactionsRemodellerFunction().create(
       this.stack
@@ -128,6 +158,11 @@ export class TransactionProcessingMachineBuilder {
     });
   }
 
+  /**
+   * Creates a step that succeeds the state machine.
+   *
+   * @protected
+   */
   protected createSucceedStep(): TransactionProcessingMachineBuilder {
     const succeed = new Succeed(this.stack, 'Succeed');
 
@@ -136,10 +171,20 @@ export class TransactionProcessingMachineBuilder {
     return this;
   }
 
+  /**
+   * Creates a step that fails the state machine.
+   *
+   * @protected
+   */
   protected createFailureStep(): Fail {
     return new Fail(this.stack, 'Failure');
   }
 
+  /**
+   * Creates the execution role for the state machine.
+   *
+   * @protected
+   */
   protected createExecutionRole(): Role {
     return new Role(
       this.stack,

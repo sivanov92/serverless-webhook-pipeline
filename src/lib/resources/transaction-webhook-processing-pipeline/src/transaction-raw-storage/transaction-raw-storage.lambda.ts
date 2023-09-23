@@ -1,5 +1,5 @@
 import { bucketKeyGeneratorUtil } from './bucket-key-generator.util';
-import { S3Service } from '../../../../integrations/s3';
+import { S3Service } from '@serverless-pipeline/s3';
 import {
   TRANSACTIONS_RAW_BUCKET_NAME,
   BankTransactionsPayload,
