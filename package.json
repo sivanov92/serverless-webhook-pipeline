@@ -6,8 +6,8 @@
   },
   "license": "ISC",
   "scripts": {
-    "build": "",
-    "watch": "",
+    "test": "jest",
+    "watch": "cdk watch",
     "cdk": "cdk"
   },
   "devDependencies": {

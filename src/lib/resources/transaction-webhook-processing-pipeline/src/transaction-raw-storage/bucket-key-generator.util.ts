@@ -1,4 +1,4 @@
-import { BankTransactionsPayload } from '../../../../packages/bank-transactions/bank-transactions.types';
+import { BankTransactionsPayload } from '@serverless-pipeline/bank-transactions';
 
 export const bucketKeyGeneratorUtil = (
   transactionsPayload: BankTransactionsPayload
