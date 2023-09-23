@@ -1,17 +1,12 @@
-import { BaseWrapperFunction } from '../../../../common';
+import { BaseLambdaFunction } from '../../../../common';
 import * as path from 'path';
+import { LambdaDecorators } from '../../../../common/decorators/lambda';
 
-export class TransactionValidatorFunction extends BaseWrapperFunction {
-  protected readonly lambdaName = 'TransactionValidatorFunction';
-  protected readonly functionSourceCodeFile = 'transaction-validator.lambda.ts';
-  protected readonly directoryName = 'transaction-validator';
-
-  protected getFunctionPath(): string {
-    return path.join(
-      __dirname,
-      '../../src',
-      this.directoryName,
-      this.functionSourceCodeFile
-    );
-  }
-}
+@LambdaDecorators.Lambda({
+  name: 'TransactionValidatorFunction',
+  functionSourcePath: path.join(
+    __dirname,
+    '../../src/transaction-validator/transaction-validator.lambda.ts'
+  ),
+})
+export class TransactionValidatorFunction extends BaseLambdaFunction {}

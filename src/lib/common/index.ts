@@ -1,1 +1,1 @@
-export * from './functions/base-wrapper.function';
+export * from './functions/base-lambda.function';

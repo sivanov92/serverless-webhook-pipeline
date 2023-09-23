@@ -33,6 +33,9 @@
       ],
       "@serverless-pipeline/dynamo": [
         "src/lib/integrations/dynamodb"
+      ],
+      "@serverless-pipeline/lambda-decorators": [
+        "src/lib/common/decorators/lambda"
       ]
     },
     "allowSyntheticDefaultImports": true
