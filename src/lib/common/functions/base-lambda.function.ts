@@ -12,7 +12,7 @@ import {
   lambdaHandlerMetaKey,
   lambdaNameMetaKey,
   lambdaPermissionsMetaKey,
-} from '../../common/decorators/lambda';
+} from '../decorators';
 
 export class BaseLambdaFunction {
   protected readonly nodeRuntime = Runtime.NODEJS_18_X;
@@ -23,6 +23,7 @@ export class BaseLambdaFunction {
       handler: this.getHandlerMethod(),
       entry: this.getFunctionPath(),
       role: this.getRole(stack),
+      retryAttempts: 0,
     });
   }
 

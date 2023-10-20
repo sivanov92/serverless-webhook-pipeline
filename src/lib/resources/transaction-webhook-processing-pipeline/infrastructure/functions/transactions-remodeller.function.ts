@@ -1,6 +1,6 @@
 import { BaseLambdaFunction } from '../../../../common';
 import * as path from 'path';
-import { LambdaDecorators } from '../../../../common/decorators/lambda';
+import { LambdaDecorators } from '../../../../common/decorators';
 
 @LambdaDecorators.Lambda({
   name: 'TransactionsRemodellerFunction',
