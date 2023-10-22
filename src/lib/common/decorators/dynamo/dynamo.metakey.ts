@@ -4,12 +4,17 @@ export const dynamoModelTableNameMetaKey = Symbol(
 export const dynamoModelPartitionKeyMetaKey = Symbol(
   'metaKey:dynamoModelPartitionKey'
 );
-
-export const dynamoModelPartitionKeyValueMetaKey = Symbol(
-  'metaKey:dynamoModelPartitionKeyValue'
+export const dynamoModelPartitionKeyPrefixMetaKey = Symbol(
+  'metaKey:dynamoModelPartitionKeyPrefix'
+);
+export const dynamoModelPartitionKeyPropertyMetaKey = Symbol(
+  'metaKey:dynamoModelPartitionKeyProperty'
 );
 
 export const dynamoModelSortKeyMetaKey = Symbol('metaKey:dynamoModelSortKey');
-export const dynamoModelSortKeyValueMetaKey = Symbol(
-  'metaKey:dynamoModelSortKeyValue'
+export const dynamoModelSortKeyPropertyMetaKey = Symbol(
+  'metaKey:dynamoModelSortKeyProperty'
+);
+export const dynamoModelSortKeyPrefixMetaKey = Symbol(
+  'metaKey:dynamoModelSortKeyPrefix'
 );

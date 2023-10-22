@@ -25,6 +25,9 @@
       "./node_modules/@types"
     ],
     "paths": {
+      "@serverless-pipeline/common": [
+        "src/lib/common"
+      ],
       "@serverless-pipeline/bank-transactions": [
         "src/lib/packages/bank-transactions"
       ],
@@ -36,6 +39,9 @@
       ],
       "@serverless-pipeline/lambda-decorators": [
         "src/lib/common/decorators/lambda"
+      ],
+      "@serverless-pipeline/dynamo-decorators": [
+        "src/lib/common/decorators/dynamo"
       ]
     },
     "allowSyntheticDefaultImports": true

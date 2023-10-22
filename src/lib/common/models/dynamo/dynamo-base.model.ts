@@ -1,9 +1,11 @@
 import { DynamodbService } from '@serverless-pipeline/dynamo';
 import {
   dynamoModelPartitionKeyMetaKey,
-  dynamoModelPartitionKeyValueMetaKey,
+  dynamoModelPartitionKeyPrefixMetaKey,
+  dynamoModelPartitionKeyPropertyMetaKey,
   dynamoModelSortKeyMetaKey,
-  dynamoModelSortKeyValueMetaKey,
+  dynamoModelSortKeyPrefixMetaKey,
+  dynamoModelSortKeyPropertyMetaKey,
   dynamoModelTableNameMetaKey,
 } from '../../decorators';
 
@@ -11,32 +13,34 @@ export type DynamoModelPrefix = string | null;
 
 export class DynamoBaseModel<ITEM> {
   protected tableName: string;
+
   protected partitionKey: string;
-  protected partitionKeyValue: string;
+  protected partitionKeyProperty: keyof ITEM;
+  protected partitionKeyPrefix: DynamoModelPrefix = null;
+
   protected sortKey: string;
-  protected sortKeyValue: string;
+  protected sortKeyProperty: keyof ITEM;
+  protected sortKeyPrefix: DynamoModelPrefix = null;
 
   protected readonly MODEL_KEYS_DELIMITER = '#';
 
   private dynamoDbService?: DynamodbService;
 
-  /**
-   * Creates a new instance of the DynamoBaseModel only through factory method.
-   *
-   * @private
-   */
-  private constructor() {}
-
-  public create<ITEM>(): DynamoBaseModel<ITEM> {
+  public constructor() {
     /**
      * Assign the meta values to the class properties.
      */
     this.assignTableName();
     this.assignPartitionKey();
-    this.assignPartitionKeyValue();
-    this.assignSortKey();
-    this.assignSortKeyValue();
+    this.assignPartitionKeyProperty();
+    this.assignPartitionKeyPrefix();
 
+    this.assignSortKey();
+    this.assignSortKeyProperty();
+    this.assignSortKeyPrefix();
+  }
+
+  public static create<ITEM>(): DynamoBaseModel<ITEM> {
     return new DynamoBaseModel<ITEM>();
   }
 
@@ -47,32 +51,46 @@ export class DynamoBaseModel<ITEM> {
     return this.dynamoDbService;
   }
 
+  public getTableName(): string {
+    return this.tableName;
+  }
+
   protected buildPartitionKey(
     item: ITEM,
-    prefix: DynamoModelPrefix = null,
     ...additionalProperties: Array<keyof ITEM>
   ): string {
-    /**
-     * TODO: Implement this method.
-     */
-    return '';
+    const mainPropertyValue = item[this.partitionKeyProperty];
+    const partitionKeyComponents = [
+      this.partitionKeyPrefix,
+      mainPropertyValue,
+      ...additionalProperties,
+    ];
+
+    return partitionKeyComponents
+      .filter(Boolean)
+      .join(this.MODEL_KEYS_DELIMITER);
   }
 
   protected buildSortKey(
     item: ITEM,
-    prefix: DynamoModelPrefix = null,
     ...additionalProperties: Array<unknown>
   ): string {
-    /**
-     * TODO: Implement this method.
-     */
-    return '';
+    const mainPropertyValue = item[this.sortKeyProperty];
+    const sortKeyComponents = [
+      this.sortKeyPrefix,
+      mainPropertyValue,
+      ...additionalProperties,
+    ];
+
+    return sortKeyComponents.filter(Boolean).join(this.MODEL_KEYS_DELIMITER);
   }
 
   protected prepareItemsForUpload(items: Array<ITEM>) {
+    const timestamp = new Date().toISOString();
+
     return items.map((item) => ({
       [this.partitionKey]: this.buildPartitionKey(item),
-      [this.sortKey]: this.buildSortKey(item),
+      [this.sortKey]: this.buildSortKey(item, timestamp),
       ...item,
     }));
   }
@@ -109,19 +127,41 @@ export class DynamoBaseModel<ITEM> {
     throw new Error(`Partition key not found for ${this.constructor.name}`);
   }
 
-  private assignPartitionKeyValue(): void {
+  private assignPartitionKeyProperty(): void {
     if (
-      Reflect.hasMetadata(dynamoModelPartitionKeyValueMetaKey, this.constructor)
+      Reflect.hasMetadata(
+        dynamoModelPartitionKeyPropertyMetaKey,
+        this.constructor
+      )
     ) {
-      this.partitionKeyValue = Reflect.getMetadata(
-        dynamoModelPartitionKeyValueMetaKey,
+      this.partitionKeyProperty = Reflect.getMetadata(
+        dynamoModelPartitionKeyPropertyMetaKey,
         this.constructor
       );
       return;
     }
 
     throw new Error(
-      `Partition key value not found for ${this.constructor.name}`
+      `Partition key property not found for ${this.constructor.name}`
+    );
+  }
+
+  private assignPartitionKeyPrefix(): void {
+    if (
+      Reflect.hasMetadata(
+        dynamoModelPartitionKeyPrefixMetaKey,
+        this.constructor
+      )
+    ) {
+      this.partitionKeyPrefix = Reflect.getMetadata(
+        dynamoModelPartitionKeyPrefixMetaKey,
+        this.constructor
+      );
+      return;
+    }
+
+    throw new Error(
+      `Partition key prefix not found for ${this.constructor.name}`
     );
   }
 
@@ -138,16 +178,33 @@ export class DynamoBaseModel<ITEM> {
     throw new Error(`Sort key not found for ${this.constructor.name}`);
   }
 
-  private assignSortKeyValue(): void {
-    if (Reflect.hasMetadata(dynamoModelSortKeyValueMetaKey, this.constructor)) {
-      this.sortKeyValue = Reflect.getMetadata(
-        dynamoModelSortKeyValueMetaKey,
+  private assignSortKeyProperty(): void {
+    if (
+      Reflect.hasMetadata(dynamoModelSortKeyPropertyMetaKey, this.constructor)
+    ) {
+      this.sortKeyProperty = Reflect.getMetadata(
+        dynamoModelSortKeyPropertyMetaKey,
         this.constructor
       );
 
       return;
     }
 
-    throw new Error(`Sort key value not found for ${this.constructor.name}`);
+    throw new Error(`Sort key property not found for ${this.constructor.name}`);
+  }
+
+  private assignSortKeyPrefix(): void {
+    if (
+      Reflect.hasMetadata(dynamoModelSortKeyPrefixMetaKey, this.constructor)
+    ) {
+      this.sortKeyProperty = Reflect.getMetadata(
+        dynamoModelSortKeyPrefixMetaKey,
+        this.constructor
+      );
+
+      return;
+    }
+
+    throw new Error(`Sort key prefix not found for ${this.constructor.name}`);
   }
 }
