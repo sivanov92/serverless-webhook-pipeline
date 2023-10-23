@@ -8,6 +8,13 @@ import {
   dynamoModelSortKeyPropertyMetaKey,
   dynamoModelTableNameMetaKey,
 } from '../../decorators';
+import { RemovalPolicy, Stack } from 'aws-cdk-lib';
+import {
+  AttributeType,
+  BillingMode,
+  Table,
+  TableEncryption,
+} from 'aws-cdk-lib/aws-dynamodb';
 
 export type DynamoModelPrefix = string | null;
 
@@ -51,8 +58,23 @@ export class DynamoBaseModel<ITEM> {
     return this.dynamoDbService;
   }
 
-  public getTableName(): string {
-    return this.tableName;
+  public static createTable(stack: Stack): Table {
+    const model = this.create();
+    return new Table(stack, model.tableName, {
+      tableName: model.tableName,
+      partitionKey: {
+        name: model.partitionKey,
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: model.sortKey,
+        type: AttributeType.STRING,
+      },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+      encryption: TableEncryption.AWS_MANAGED,
+      pointInTimeRecovery: true,
+    });
   }
 
   protected buildPartitionKey(
