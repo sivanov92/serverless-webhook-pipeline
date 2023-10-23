@@ -4,5 +4,19 @@ import {
 } from '@serverless-pipeline/bank-transactions';
 
 export const handler = async (event: BankTransactionsPayload) => {
-  await BankTransaction.batchCreateItems(event);
+  const formattedItems = event.items.map((item) => {
+    const { amount, transactionId, ...otherData } = item;
+    return {
+      bankAccountId: event.bankAccountId,
+      iban: event.iban,
+      amount: item.amount,
+      currency: event.currency,
+      transactionId: item.transactionId,
+      bankName: event.bankName,
+      otherData,
+    };
+  });
+
+  const bankTransactionModel = BankTransaction.create();
+  await bankTransactionModel.batchCreateItems(formattedItems);
 };

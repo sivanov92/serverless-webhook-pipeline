@@ -1,8 +1,7 @@
 import { bucketKeyGeneratorUtil } from './bucket-key-generator.util';
-import { S3Service } from '@serverless-pipeline/s3';
 import {
-  TRANSACTIONS_RAW_BUCKET_NAME,
   BankTransactionsPayload,
+  RawBankTransactionsBucket,
 } from '@serverless-pipeline/bank-transactions';
 
 export const handler = async (
@@ -11,10 +10,6 @@ export const handler = async (
   console.log('TransactionRawStorageLambda: Received event', event);
   const bucketKey = bucketKeyGeneratorUtil(event);
 
-  const s3Service = new S3Service();
-  await s3Service.saveObject(
-    TRANSACTIONS_RAW_BUCKET_NAME,
-    bucketKey,
-    JSON.stringify(event)
-  );
+  const s3model = RawBankTransactionsBucket.create();
+  await s3model.saveObject(bucketKey, JSON.stringify(event));
 };

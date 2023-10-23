@@ -42,6 +42,9 @@
       ],
       "@serverless-pipeline/dynamo-decorators": [
         "src/lib/common/decorators/dynamo"
+      ],
+      "@serverless-pipeline/s3-decorators": [
+        "src/lib/common/decorators/s3"
       ]
     },
     "allowSyntheticDefaultImports": true

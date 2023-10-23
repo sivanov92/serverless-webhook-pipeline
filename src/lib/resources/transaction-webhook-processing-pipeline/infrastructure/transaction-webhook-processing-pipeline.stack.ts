@@ -1,8 +1,10 @@
 import { Stack, StackProps, Tags } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { TransactionsWebhookApi } from './transactions-webhook.api';
-import { RawTransactionsBucket } from './storage';
-import { BankTransaction } from '@serverless-pipeline/bank-transactions';
+import {
+  BankTransaction,
+  RawBankTransactionsBucket,
+} from '@serverless-pipeline/bank-transactions';
 
 export class TransactionWebhookProcessingPipelineStack extends Stack {
   static readonly STACK_NAME = 'TransactionWebhookProcessingPipelineStack';
@@ -13,7 +15,7 @@ export class TransactionWebhookProcessingPipelineStack extends Stack {
     /**
      * Creates the storage resources.
      */
-    RawTransactionsBucket.createBucket(this);
+    RawBankTransactionsBucket.createBucket(this);
     BankTransaction.createTable(this);
 
     /**
